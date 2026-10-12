@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tributacao
+      POSTGRES_USER: tributacao
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tributacao}
+    volumes:
+      - dados_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tributacao -d tributacao"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://tributacao:${POSTGRES_PASSWORD:-tributacao}@db:5432/tributacao
+      SECRET_KEY: ${SECRET_KEY:?defina SECRET_KEY no arquivo .env}
+    ports:
+      - "${API_PORTA:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dados_postgres:

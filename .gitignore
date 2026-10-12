@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.db
+*.db-journal
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+certificados/*.crt
